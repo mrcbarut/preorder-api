@@ -1,0 +1,27 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id            Int           @id @default(autoincrement())
+  shopifyId     String        @unique
+  name          String
+  originalPrice Float
+  preorderPrice Float
+  maxPreorder   Int           @default(20)
+  reservations  Reservation[]
+}
+
+model Reservation {
+  id        Int      @id @default(autoincrement())
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id])
+  email     String
+  quantity  Int
+  createdAt DateTime @default(now())
+}
