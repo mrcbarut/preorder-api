@@ -67,11 +67,22 @@ app.post('/api/preorder', async (req, res) => {
 
 // ✅ Tüm rezervasyonları getir
 app.get('/api/reservations', async (req, res) => {
-  const reservations = await prisma.reservation.findMany({
-    include: { product: true },
-    orderBy: { createdAt: 'desc' }
-  })
-  res.json(reservations)
+  try {
+    await prisma.$connect()
+    const reservations = await prisma.reservation.findMany({
+      include: { product: true },
+      orderBy: { createdAt: 'desc' }
+    })
+    res.json(reservations)
+  } catch (error) {
+    await prisma.$disconnect()
+    await prisma.$connect()
+    const reservations = await prisma.reservation.findMany({
+      include: { product: true },
+      orderBy: { createdAt: 'desc' }
+    })
+    res.json(reservations)
+  }
 })
 
 // ✅ Stok güncelle ve bildirim gönder
