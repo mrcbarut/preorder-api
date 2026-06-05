@@ -33,7 +33,6 @@ app.get('/api/preorder/status', async (req, res) => {
 app.post('/api/preorder', async (req, res) => {
   const { productId, productName, email, quantity, originalPrice, preorderPrice } = req.body
 
-  // Ürünü bul veya oluştur
   let product = await prisma.product.findFirst({
     where: { shopifyId: String(productId) }
   })
@@ -49,7 +48,6 @@ app.post('/api/preorder', async (req, res) => {
     })
   }
 
-  // Rezervasyon oluştur
   await prisma.reservation.create({
     data: {
       productId: product.id,
@@ -59,6 +57,56 @@ app.post('/api/preorder', async (req, res) => {
   })
 
   res.json({ success: true })
+})
+
+// ✅ Tüm rezervasyonları getir
+app.get('/api/reservations', async (req, res) => {
+  const reservations = await prisma.reservation.findMany({
+    include: { product: true },
+    orderBy: { createdAt: 'desc' }
+  })
+  res.json(reservations)
+})
+
+// ✅ Stok güncelle ve bildirim gönder
+app.post('/api/stock/update', async (req, res) => {
+  const { productId, stock } = req.body
+
+  const product = await prisma.product.findFirst({
+    where: { shopifyId: String(productId) },
+    include: { reservations: true }
+  })
+
+  if (!product) {
+    return res.status(404).json({ error: 'Ürün bulunamadı' })
+  }
+
+  const emails = product.reservations.map(r => r.email)
+
+  res.json({
+    success: true,
+    notifiedEmails: emails,
+    message: `${emails.length} müşteri bilgilendirildi`
+  })
+})
+
+// ✅ Rezervasyonları CSV olarak indir
+app.get('/api/reservations/export', async (req, res) => {
+  const reservations = await prisma.reservation.findMany({
+    include: { product: true },
+    orderBy: { createdAt: 'desc' }
+  })
+
+  const csv = [
+    'ID,Ürün,Email,Adet,Tarih',
+    ...reservations.map(r =>
+      `${r.id},"${r.product.name}",${r.email},${r.quantity},${r.createdAt}`
+    )
+  ].join('\n')
+
+  res.setHeader('Content-Type', 'text/csv')
+  res.setHeader('Content-Disposition', 'attachment; filename=rezervasyonlar.csv')
+  res.send(csv)
 })
 
 app.listen(process.env.PORT, () => {
