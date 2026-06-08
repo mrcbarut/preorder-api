@@ -148,6 +148,32 @@
 const API_URL = 'https://preorder-api.onrender.com'
 
 async function loadData() {
+  async function loadProducts() {
+  try {
+    const res = await fetch(`${API_URL}/api/products`)
+    const data = await res.json()
+
+    document.getElementById('products-table').innerHTML = data.map(p => `
+      <tr>
+        <td>${p.name}</td>
+        <td>${p.originalPrice.toFixed(2)} TL</td>
+        <td>${p.preorderPrice.toFixed(2)} TL</td>
+        <td>${p.maxPreorder}</td>
+        <td>${p.totalReservations}</td>
+        <td>${p.remainingSlots}</td>
+        <td>${p.remainingSlots <= 0 
+          ? '<span style="background:#fde8e8;color:#c0392b;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;">❌ Doldu</span>'
+          : '<span class="badge">✅ Aktif</span>'
+        }</td>
+      </tr>
+    `).join('')
+  } catch(e) {
+    document.getElementById('products-table').innerHTML = '<tr><td colspan="7" class="empty">❌ Hata</td></tr>'
+  }
+}
+
+loadProducts()
+setInterval(loadProducts, 30000)
   document.getElementById('table-body').innerHTML = '<tr><td colspan="7" class="loading">⏳ Yükleniyor...</td></tr>'
   
   try {
@@ -191,6 +217,25 @@ function exportCSV() {
 loadData()
 setInterval(loadData, 30000) // Her 30 saniyede otomatik yenile
 </script>
+<h2 style="margin: 30px 0 15px; font-size: 18px;">📦 Ürün Stok Durumu</h2>
 
+<div class="table-wrapper" style="margin-bottom: 30px;">
+  <table>
+    <thead>
+      <tr>
+        <th>Ürün</th>
+        <th>Normal Fiyat</th>
+        <th>Ön Sipariş Fiyatı</th>
+        <th>Max Ön Sipariş</th>
+        <th>Toplam Rezervasyon</th>
+        <th>Kalan Slot</th>
+        <th>Durum</th>
+      </tr>
+    </thead>
+    <tbody id="products-table">
+      <tr><td colspan="7" class="loading">⏳ Yükleniyor...</td></tr>
+    </tbody>
+  </table>
+</div>
 </body>
 </html>
