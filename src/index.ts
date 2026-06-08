@@ -34,10 +34,11 @@ app.get('/api/preorder/status', async (req, res) => {
       where: { productId: product?.id ?? 0 }
     })
     res.json({
-      totalReservations: reservations,
-      remainingSlots: (product?.maxPreorder ?? 20) - reservations,
-      preorderPrice: product?.preorderPrice
-    })
+    totalReservations: reservations,
+    remainingSlots: (product?.maxPreorder ?? 20) - reservations,
+    maxPreorder: product?.maxPreorder ?? 20,
+    preorderPrice: product?.preorderPrice
+  })
   } finally {
     await prisma.$disconnect()
   }
