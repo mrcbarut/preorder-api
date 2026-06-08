@@ -7,95 +7,27 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
-    .header {
-      background: #111;
-      color: white;
-      padding: 20px 30px;
-      border-radius: 10px;
-      margin-bottom: 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+    .header { background: #111; color: white; padding: 20px 30px; border-radius: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
     .header h1 { font-size: 22px; }
-    .stats {
-      display: flex;
-      gap: 15px;
-      margin-bottom: 20px;
-    }
-    .stat-card {
-      background: white;
-      border-radius: 10px;
-      padding: 20px;
-      flex: 1;
-      text-align: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    .stat-card .number {
-      font-size: 36px;
-      font-weight: bold;
-      color: #111;
-    }
-    .stat-card .label {
-      font-size: 13px;
-      color: #666;
-      margin-top: 5px;
-    }
-    .controls {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-    .btn {
-      padding: 10px 20px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 600;
-    }
+    .stats { display: flex; gap: 15px; margin-bottom: 20px; }
+    .stat-card { background: white; border-radius: 10px; padding: 20px; flex: 1; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .stat-card .number { font-size: 36px; font-weight: bold; color: #111; }
+    .stat-card .label { font-size: 13px; color: #666; margin-top: 5px; }
+    .controls { display: flex; gap: 10px; margin-bottom: 20px; }
+    .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; }
     .btn-dark { background: #111; color: white; }
     .btn-green { background: #27ae60; color: white; }
     .btn:hover { opacity: 0.85; }
-    .table-wrapper {
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      overflow: hidden;
-    }
+    .table-wrapper { background: white; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; margin-bottom: 30px; }
     table { width: 100%; border-collapse: collapse; }
-    th {
-      background: #111;
-      color: white;
-      padding: 14px 16px;
-      text-align: left;
-      font-size: 13px;
-    }
-    td {
-      padding: 12px 16px;
-      border-bottom: 1px solid #eee;
-      font-size: 14px;
-    }
+    th { background: #111; color: white; padding: 14px 16px; text-align: left; font-size: 13px; }
+    td { padding: 12px 16px; border-bottom: 1px solid #eee; font-size: 14px; }
     tr:last-child td { border-bottom: none; }
     tr:hover td { background: #f9f9f9; }
-    .badge {
-      background: #e8f5e9;
-      color: #27ae60;
-      padding: 3px 10px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-    }
-    .loading {
-      text-align: center;
-      padding: 40px;
-      color: #666;
-    }
-    .empty {
-      text-align: center;
-      padding: 40px;
-      color: #999;
-    }
+    .badge { background: #e8f5e9; color: #27ae60; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .loading { text-align: center; padding: 40px; color: #666; }
+    .empty { text-align: center; padding: 40px; color: #999; }
+    h2 { margin: 30px 0 15px; font-size: 18px; }
   </style>
 </head>
 <body>
@@ -121,10 +53,12 @@
 </div>
 
 <div class="controls">
-  <button class="btn btn-dark" onclick="loadData()">🔄 Yenile</button>
+  <button class="btn btn-dark" onclick="loadData(); loadProducts()">🔄 Yenile</button>
   <button class="btn btn-green" onclick="exportCSV()">📥 CSV İndir</button>
 </div>
 
+<!-- Rezervasyonlar Tablosu -->
+<h2>📋 Rezervasyonlar</h2>
 <div class="table-wrapper">
   <table>
     <thead>
@@ -144,43 +78,37 @@
   </table>
 </div>
 
+<!-- Ürün Stok Tablosu -->
+<h2>📦 Ürün Stok Durumu</h2>
+<div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th>Ürün</th>
+        <th>Normal Fiyat</th>
+        <th>Ön Sipariş Fiyatı</th>
+        <th>Max Ön Sipariş</th>
+        <th>Toplam Rezervasyon</th>
+        <th>Kalan Slot</th>
+        <th>Durum</th>
+        <th>İşlem</th>
+      </tr>
+    </thead>
+    <tbody id="products-table">
+      <tr><td colspan="8" class="loading">⏳ Yükleniyor...</td></tr>
+    </tbody>
+  </table>
+</div>
+
 <script>
 const API_URL = 'https://preorder-api.onrender.com'
 
 async function loadData() {
-  async function loadProducts() {
-  try {
-    const res = await fetch(`${API_URL}/api/products`)
-    const data = await res.json()
-
-    document.getElementById('products-table').innerHTML = data.map(p => `
-      <tr>
-        <td>${p.name}</td>
-        <td>${p.originalPrice.toFixed(2)} TL</td>
-        <td>${p.preorderPrice.toFixed(2)} TL</td>
-        <td>${p.maxPreorder}</td>
-        <td>${p.totalReservations}</td>
-        <td>${p.remainingSlots}</td>
-        <td>${p.remainingSlots <= 0 
-          ? '<span style="background:#fde8e8;color:#c0392b;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;">❌ Doldu</span>'
-          : '<span class="badge">✅ Aktif</span>'
-        }</td>
-      </tr>
-    `).join('')
-  } catch(e) {
-    document.getElementById('products-table').innerHTML = '<tr><td colspan="7" class="empty">❌ Hata</td></tr>'
-  }
-}
-
-loadProducts()
-setInterval(loadProducts, 30000)
   document.getElementById('table-body').innerHTML = '<tr><td colspan="7" class="loading">⏳ Yükleniyor...</td></tr>'
-  
   try {
     const res = await fetch(`${API_URL}/api/reservations`)
     const data = await res.json()
 
-    // İstatistikler
     document.getElementById('total-count').innerText = data.length
     document.getElementById('unique-customers').innerText = new Set(data.map(r => r.email)).size
     const revenue = data.reduce((sum, r) => sum + (r.product.preorderPrice * r.quantity), 0)
@@ -192,8 +120,7 @@ setInterval(loadProducts, 30000)
       return
     }
 
-    // Tablo
-    document.getElementById('table-body').innerHTML = data.map((r, i) => `
+    document.getElementById('table-body').innerHTML = data.map(r => `
       <tr>
         <td>${r.id}</td>
         <td>${r.product.name}</td>
@@ -204,9 +131,55 @@ setInterval(loadProducts, 30000)
         <td><span class="badge">✅ Aktif</span></td>
       </tr>
     `).join('')
-
   } catch(e) {
     document.getElementById('table-body').innerHTML = '<tr><td colspan="7" class="empty">❌ API bağlantı hatası</td></tr>'
+  }
+}
+
+async function loadProducts() {
+  try {
+    const res = await fetch(`${API_URL}/api/products`)
+    const data = await res.json()
+
+    document.getElementById('products-table').innerHTML = data.map(p => `
+      <tr>
+        <td>${p.name}</td>
+        <td><input type="number" id="op-${p.id}" value="${p.originalPrice.toFixed(2)}" style="width:90px;padding:4px;border:1px solid #ddd;border-radius:4px;"></td>
+        <td><input type="number" id="pp-${p.id}" value="${p.preorderPrice.toFixed(2)}" style="width:90px;padding:4px;border:1px solid #ddd;border-radius:4px;"></td>
+        <td><input type="number" id="mp-${p.id}" value="${p.maxPreorder}" style="width:70px;padding:4px;border:1px solid #ddd;border-radius:4px;"></td>
+        <td>${p.totalReservations}</td>
+        <td>${p.remainingSlots}</td>
+        <td>${p.remainingSlots <= 0
+          ? '<span style="background:#fde8e8;color:#c0392b;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;">❌ Doldu</span>'
+          : '<span class="badge">✅ Aktif</span>'
+        }</td>
+        <td><button class="btn btn-dark" style="padding:6px 12px;font-size:12px;" onclick="updateProduct(${p.id})">💾 Kaydet</button></td>
+      </tr>
+    `).join('')
+  } catch(e) {
+    document.getElementById('products-table').innerHTML = '<tr><td colspan="8" class="empty">❌ Hata</td></tr>'
+  }
+}
+
+async function updateProduct(id) {
+  const originalPrice = parseFloat(document.getElementById(`op-${id}`).value)
+  const preorderPrice = parseFloat(document.getElementById(`pp-${id}`).value)
+  const maxPreorder = parseInt(document.getElementById(`mp-${id}`).value)
+
+  try {
+    const res = await fetch(`${API_URL}/api/products/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ originalPrice, preorderPrice, maxPreorder })
+    })
+    if (res.ok) {
+      alert('✅ Ürün güncellendi!')
+      loadProducts()
+    } else {
+      alert('❌ Hata oluştu!')
+    }
+  } catch(e) {
+    alert('❌ Bağlantı hatası!')
   }
 }
 
@@ -215,27 +188,9 @@ function exportCSV() {
 }
 
 loadData()
-setInterval(loadData, 30000) // Her 30 saniyede otomatik yenile
+loadProducts()
+setInterval(() => { loadData(); loadProducts(); }, 30000)
 </script>
-<h2 style="margin: 30px 0 15px; font-size: 18px;">📦 Ürün Stok Durumu</h2>
 
-<div class="table-wrapper" style="margin-bottom: 30px;">
-  <table>
-    <thead>
-      <tr>
-        <th>Ürün</th>
-        <th>Normal Fiyat</th>
-        <th>Ön Sipariş Fiyatı</th>
-        <th>Max Ön Sipariş</th>
-        <th>Toplam Rezervasyon</th>
-        <th>Kalan Slot</th>
-        <th>Durum</th>
-      </tr>
-    </thead>
-    <tbody id="products-table">
-      <tr><td colspan="7" class="loading">⏳ Yükleniyor...</td></tr>
-    </tbody>
-  </table>
-</div>
 </body>
 </html>

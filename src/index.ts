@@ -158,6 +158,28 @@ app.get('/api/products', async (req, res) => {
     await prisma.$disconnect()
   }
 })
+// Ürünleri getir
+app.get('/api/products', async (req, res) => {
+  const prisma = await getPrisma()
+  try {
+    const products = await prisma.product.findMany({
+      include: { reservations: true }
+    })
+    const result = products.map(p => ({
+      id: p.id,
+      shopifyId: p.shopifyId,
+      name: p.name,
+      originalPrice: p.originalPrice,
+      preorderPrice: p.preorderPrice,
+      maxPreorder: p.maxPreorder,
+      totalReservations: p.reservations.length,
+      remainingSlots: p.maxPreorder - p.reservations.length
+    }))
+    res.json(result)
+  } finally {
+    await prisma.$disconnect()
+  }
+})
 app.listen(process.env.PORT, () => {
   console.log(`✅ API çalışıyor: http://localhost:${process.env.PORT}`)
   app.get('/admin', (req, res) => {
@@ -166,5 +188,20 @@ app.listen(process.env.PORT, () => {
   const dir1 = fs.readdirSync('/opt/render/project/src')
   const dir2 = fs.readdirSync('/opt/render/project/src/src')
   res.json({ dir1, dir2 })
+  // Ürün güncelle
+app.put('/api/products/:id', async (req, res) => {
+  const prisma = await getPrisma()
+  try {
+    const { id } = req.params
+    const { maxPreorder, originalPrice, preorderPrice } = req.body
+    const product = await prisma.product.update({
+      where: { id: Number(id) },
+      data: { maxPreorder, originalPrice, preorderPrice }
+    })
+    res.json(product)
+  } finally {
+    await prisma.$disconnect()
+  }
+})
 })
 })
