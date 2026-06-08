@@ -138,10 +138,11 @@ app.get('/admin', (req, res) => {
 })
 app.listen(process.env.PORT, () => {
   console.log(`✅ API çalışıyor: http://localhost:${process.env.PORT}`)
-})
-app.get('/admin', (req, res) => {
+  app.get('/admin', (req, res) => {
   const fs = require('fs')
   const path = require('path')
-  const files = fs.readdirSync(path.join(__dirname, '..'))
-  res.json(files)
+  const dir1 = fs.readdirSync('/opt/render/project/src')
+  const dir2 = fs.readdirSync('/opt/render/project/src/src')
+  res.json({ dir1, dir2 })
+})
 })
