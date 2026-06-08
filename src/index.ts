@@ -132,7 +132,10 @@ app.get('/api/reservations/export', async (req, res) => {
     await prisma.$disconnect()
   }
 })
-
+// Admin paneli
+app.get('/admin', (req, res) => {
+  res.sendFile(__dirname + '/admin.html')
+})
 app.listen(process.env.PORT, () => {
   console.log(`✅ API çalışıyor: http://localhost:${process.env.PORT}`)
 })
