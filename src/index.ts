@@ -134,7 +134,7 @@ app.get('/api/reservations/export', async (req, res) => {
 })
 // Admin paneli
 app.get('/admin', (req, res) => {
-  res.sendFile(__dirname + '/../src/admin.html')
+  res.sendFile('/opt/render/project/src/src/admin.html')
 })
 app.listen(process.env.PORT, () => {
   console.log(`✅ API çalışıyor: http://localhost:${process.env.PORT}`)
