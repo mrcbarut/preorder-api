@@ -180,6 +180,21 @@ app.get('/api/products', async (req, res) => {
     await prisma.$disconnect()
   }
 })
+// Ürün güncelle
+app.put('/api/products/:id', async (req, res) => {
+  const prisma = await getPrisma()
+  try {
+    const { id } = req.params
+    const { maxPreorder, originalPrice, preorderPrice } = req.body
+    const product = await prisma.product.update({
+      where: { id: Number(id) },
+      data: { maxPreorder, originalPrice, preorderPrice }
+    })
+    res.json(product)
+  } finally {
+    await prisma.$disconnect()
+  }
+})
 app.listen(process.env.PORT, () => {
   console.log(`✅ API çalışıyor: http://localhost:${process.env.PORT}`)
   app.get('/admin', (req, res) => {
