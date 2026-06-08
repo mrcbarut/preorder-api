@@ -139,3 +139,9 @@ app.get('/admin', (req, res) => {
 app.listen(process.env.PORT, () => {
   console.log(`✅ API çalışıyor: http://localhost:${process.env.PORT}`)
 })
+app.get('/admin', (req, res) => {
+  const fs = require('fs')
+  const path = require('path')
+  const files = fs.readdirSync(path.join(__dirname, '..'))
+  res.json(files)
+})
